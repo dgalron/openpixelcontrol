@@ -53,17 +53,22 @@ void setup() {
 }
 
 void loop() {
-  bytesRead = Serial.readBytes((char *) drawingMemory, sizeof(drawingMemory))
-  if (bytesRead == sizeof(drawingMemory)) {
-    digitalWrite(12, HIGH);
-    pinMode(12, OUTPUT);
-    while (elapsedUsecSinceLastFrameSync < usecUntilFrameSync) /* wait */ ;
-    elapsedUsecSinceLastFrameSync -= usecUntilFrameSync;
-    digitalWrite(12, LOW);
-    // WS2811 update begins immediately after falling edge of frame sync
-    digitalWrite(13, HIGH);
-    leds.show();
-    digitalWrite(13, LOW);
+  bytesRead = Serial.readBytes((char *) drawingMemory, sizeof(drawingMemory));
+  Serial.print("Writing ");
+  int sum = 0;
+  for (int i = 0; i < sizeof(drawingMemory); ++i) {
+    sum += drawingMemory[i];
   }
+  Serial.println (sum);
+//  if (bytesRead == sizeof(drawingMemory)) {
+//    digitalWrite(12, HIGH);
+//    pinMode(12, OUTPUT);
+////    while (elapsedUsecSinceLastFrameSync < usecUntilFrameSync) /* wait */ ;
+////    elapsedUsecSinceLastFrameSync -= usecUntilFrameSync;
+//    digitalWrite(12, LOW);
+//    // WS2811 update begins immediately after falling edge of frame sync
+//    digitalWrite(13, HIGH);
+//    leds.show();
+//    digitalWrite(13, LOW);
+//  }
 }
-
