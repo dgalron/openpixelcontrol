@@ -133,6 +133,7 @@ u8 opc_receive(opc_source source, opc_handler* handler, u32 timeout_ms) {
         received = recv(info->sock, info->payload + info->payload_length,
                         payload_expected - info->payload_length, 0);
         if (received > 0) {
+	  fprintf(stderr, "HERE!\n");
           info->payload_length += received;
         }
       }

@@ -14,7 +14,7 @@ specific language governing permissions and limitations under the License. */
 
 #include "opc.h"
 
-#define INACTIVITY_TIMEOUT_MS 60000
+#define INACTIVITY_TIMEOUT_MS 6000000000
 #define DIAGNOSTIC_TIMEOUT_MS 1000
 
 // Parse command line args to get port number (argv[1]) and speed (argv[2]).

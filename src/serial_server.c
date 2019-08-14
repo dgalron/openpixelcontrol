@@ -21,9 +21,13 @@ specific language governing permissions and limitations under the License. */
 #include "opc.h"
 #include "spi.h"
 
+#ifndef NUM_DRIVERS
 #define NUM_DRIVERS 1
+#endif
+#ifndef BAUD_RATE
 #define BAUD_RATE 1572864
-
+#endif
+//#define OPC_MAX_PIXELS_PER_MESSAGE 1
 char *serial_driver_fds[NUM_DRIVERS];
 static u8 buffer[OPC_MAX_PIXELS_PER_MESSAGE * 4];
 uint serial_drivers[NUM_DRIVERS];
@@ -77,10 +81,38 @@ void setup_serial_devices() {
 
 void serial_write(u8* buffer) {
   for (uint driver_no = 0; driver_no < NUM_DRIVERS; ++driver_no) {
-    fprintf(stderr, "Writing buffer %d\n", buffer);
+    fprintf(stderr, "Writing buffer %d  of size %d\n", buffer[0], sizeof(buffer));
     int n_written = write(serial_drivers[driver_no], buffer, OPC_MAX_PIXELS_PER_MESSAGE*4);
     fprintf(stderr, "Serial wrote %d bytes\n", n_written);
   }
+}
+
+void serial_handler(u8 channel, u16 count, pixel* pixels) {
+  int i;
+  pixel* p;
+  u8* d;
+
+  d = buffer;
+  fprintf(stderr, "Writing %d pixels\n", count);
+  for (i = 0, p = pixels; i < count; i++, p++) {
+    d[i*4] = 0;
+    d[i*4+1] = p->b;
+    d[i*4+2] = p->g;
+    d[i*4+3] = p->r;
+  }
+  char* sep = " =";
+  printf("-> channel %d: %d pixel%s", channel, count, count == 1 ? "" : "s");
+  for (i = 0; i < count; i++) {
+    if (i >= 4) {
+      printf(", ...");
+      break;
+    }
+    printf("%s %02x %02x %02x//", sep, d[i*4+3], d[i*4+2], d[i*3+1]);
+    printf("%02x %02x %02x", pixels[i].r, pixels[i].g, pixels[i].b);
+    sep = ",";
+  }
+  printf("\n");  
+  serial_write(d);
 }
 
 void serial_put_pixels(u8* buffer, u16 count, pixel* pixels) {
@@ -89,6 +121,7 @@ void serial_put_pixels(u8* buffer, u16 count, pixel* pixels) {
   u8* d;
 
   d = buffer;
+  fprintf(stderr, "Writing %d pixels\n", count);
   for (i = 0, p = pixels; i < count; i++, p++) {
     *d++ = 0;
     *d++ = p->b;
@@ -108,5 +141,9 @@ int main(int argc, char** argv) {
   setup_serial_devices();
   
   get_speed_and_port(&spi_speed_hz, &port, argc, argv);
-  return opc_serve_main(port, serial_put_pixels, buffer);
+  opc_source s = opc_new_source(port);
+  while (s >= 0) {
+    opc_receive(s, serial_handler, 60000);
+  }
+  // return opc_serve_main(port, serial_put_pixels, buffer);
 }

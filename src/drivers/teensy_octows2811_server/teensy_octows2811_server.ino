@@ -30,8 +30,8 @@
 // are arranged.  If 0, each strip begins on the left for its first row,
 // then goes right to left for its second row, then left to right,
 // zig-zagging for each successive row.
-#define LED_WIDTH      60   // number of LEDs horizontally
-#define LED_HEIGHT     16   // number of LEDs vertically (must be multiple of 8)
+#define LED_WIDTH      44   // number of LEDs horizontally
+#define LED_HEIGHT     64   // number of LEDs vertically (must be multiple of 8)
 #define LED_LAYOUT     0    // 0 = even rows left->right, 1 = even rows right->left
 
 const int ledsPerStrip = LED_WIDTH * LED_HEIGHT / 8;
@@ -46,29 +46,30 @@ const int config = WS2811_800kHz; // color config is on the PC side
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
 
 void setup() {
+  for (int i = 0; i < ledsPerStrip*6; ++i) {
+    displayMemory[i] = 0;
+    drawingMemory[i] = 0;
+  }
   pinMode(12, INPUT_PULLUP); // Frame Sync
   Serial.setTimeout(50);
+  pinMode(13, OUTPUT);
   leds.begin();
   leds.show();
+  digitalWrite(13, HIGH);
 }
 
 void loop() {
   bytesRead = Serial.readBytes((char *) drawingMemory, sizeof(drawingMemory));
-  Serial.print("Writing ");
-  int sum = 0;
-  for (int i = 0; i < sizeof(drawingMemory); ++i) {
-    sum += drawingMemory[i];
-  }
-  Serial.println (sum);
-//  if (bytesRead == sizeof(drawingMemory)) {
-//    digitalWrite(12, HIGH);
-//    pinMode(12, OUTPUT);
-////    while (elapsedUsecSinceLastFrameSync < usecUntilFrameSync) /* wait */ ;
-////    elapsedUsecSinceLastFrameSync -= usecUntilFrameSync;
-//    digitalWrite(12, LOW);
-//    // WS2811 update begins immediately after falling edge of frame sync
+  if (bytesRead == sizeof(drawingMemory)) {
+    
+    digitalWrite(12, HIGH);
+    pinMode(12, OUTPUT);
+//    while (elapsedUsecSinceLastFrameSync < usecUntilFrameSync) /* wait */ ;
+//    elapsedUsecSinceLastFrameSync -= usecUntilFrameSync;
+    digitalWrite(12, LOW);
+    // WS2811 update begins immediately after falling edge of frame sync
 //    digitalWrite(13, HIGH);
-//    leds.show();
+    leds.show();
 //    digitalWrite(13, LOW);
-//  }
+  }
 }

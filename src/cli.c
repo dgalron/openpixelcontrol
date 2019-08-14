@@ -58,6 +58,7 @@ int opc_serve_main(u16 port, put_pixels_func* put, u8* buffer) {
       diagnostic_pixels[i].b = 0;
   }
   while (inactivity_ms < INACTIVITY_TIMEOUT_MS) {
+    fprintf(stderr, "Blah %d/%d\n", inactivity_ms, INACTIVITY_TIMEOUT_MS);
       if (opc_receive(s, opc_serve_handler, DIAGNOSTIC_TIMEOUT_MS)) {
           inactivity_ms = 0;
       } else {
