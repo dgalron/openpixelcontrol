@@ -16,41 +16,44 @@ from __future__ import division
 import time
 import math
 import sys
+import optparse
 
-import opc_client
+import opc 
 
 
 #-------------------------------------------------------------------------------
 # handle command line
+parser = optparse.OptionParser()
+parser.add_option('-l', '--layout', dest='layout',
+                    action='store', type='string',
+                    help='layout file')
+parser.add_option('-s', '--server', dest='server', default='127.0.0.1:7890',
+                    action='store', type='string',
+                    help='ip and port of server')
+parser.add_option('-f', '--fps', dest='fps', default=20,
+                    action='store', type='int',
+                    help='frames per second')
 
-if len(sys.argv) == 1:
-    IP_PORT = '127.0.0.1:7890'
-elif len(sys.argv) == 2 and ':' in sys.argv[1] and not sys.argv[1].startswith('-'):
-    IP_PORT = sys.argv[1]
-else:
-    print
-    print '    Usage: rgb_test_pattern.py [ip:port]'
-    print
-    print '    If not set, ip:port defauls to 127.0.0.1:7890'
-    print
-    sys.exit(0)
+options, args = parser.parse_args()
 
 
 #-------------------------------------------------------------------------------
 # connect to server
 
-print
-print '    connecting to server at %s' % IP_PORT
-print
-
-SOCK = opc_client.get_socket(IP_PORT)
+client = opc.Client(options.server)
+if client.can_connect():
+    print('    connected to %s' % options.server)
+else:
+    # can't connect, but keep running in case the server appears later
+    print('    WARNING: could not connect to %s' % options.server)
+print()
 
 
 #-------------------------------------------------------------------------------
 # send pixels
 
-print '    sending pixels forever (control-c to exit)...'
-print
+print('    sending pixels forever (control-c to exit)...')
+print()
 
 n_pixels = 1250  # number of pixels in the included "wall" layout
 fps = 2         # frames per second (color switches every frame)
@@ -64,6 +67,6 @@ while True:
         rgb = tuple(rgb)
         for ii in range(n_pixels):
             pixels.append(rgb)
-        opc_client.put_pixels(SOCK, 0, pixels)
+        client.put_pixels(pixels, channel=0)
         time.sleep(1 / fps)
 

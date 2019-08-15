@@ -107,7 +107,7 @@ void serial_handler(u8 channel, u16 count, pixel* pixels) {
       printf(", ...");
       break;
     }
-    printf("%s %02x %02x %02x//", sep, d[i*4+3], d[i*4+2], d[i*3+1]);
+    printf("%s %02x %02x %02x//", sep, d[i*4+3], d[i*4+2], d[i*4+1]);
     printf("%02x %02x %02x", pixels[i].r, pixels[i].g, pixels[i].b);
     sep = ",";
   }
