@@ -70,21 +70,28 @@ void setup() {
 
 void loop() {
   int bytesRead = Serial.readBytes((char *) buffer, sizeof(buffer));
+  Serial.print("Read ");
+  Serial.print(bytesRead);
+  Serial.print(" / ");
+  Serial.print(sizeof(buffer));
+  Serial.print("  --> ");
+  Serial.println(LED_WIDTH * LED_HEIGHT);
   if (bytesRead == sizeof(buffer)) {
-    for (int i = 0; i < 4; ++i) {
-      char tbs[16];
-      sprintf(tbs, "%20x ", buffer[i]); 
-      Serial.print(tbs);
-    }
-    Serial.println();
-    digitalWrite(12, HIGH);
-    pinMode(12, OUTPUT);
+//    digitalWrite(12, HIGH);
+//    pinMode(12, OUTPUT);
 //    while (elapsedUsecSinceLastFrameSync < usecUntilFrameSync) /* wait */ ;
 //    elapsedUsecSinceLastFrameSync -= usecUntilFrameSync;
-    digitalWrite(12, LOW);
+//    digitalWrite(12, LOW);
     // WS2811 update begins immediately after falling edge of frame sync
 //    digitalWrite(13, HIGH);
-    for (int i = 0; i < leds.numPixels(); i++) {
+    for (int i = 0; i < LED_WIDTH * LED_HEIGHT; i++) {
+      if (i < 10) {
+        char tbs[16];
+        sprintf(tbs, "%20x ", buffer[i]); 
+        Serial.print(tbs);      
+      }
+      if (i == 10)
+        Serial.println();
       leds.setPixel(i, buffer[i]);
     }
     leds.show();
@@ -93,6 +100,5 @@ void loop() {
 //    digitalWrite(13, LOW);
   } else {
     digitalWrite(13, HIGH);
-//    Serial.println("Blah");
   }
 }

@@ -55,7 +55,7 @@ print()
 print('    sending pixels forever (control-c to exit)...')
 print()
 
-n_pixels = 1250  # number of pixels in the included "wall" layout
+n_pixels = 44*64  # number of pixels in the included "wall" layout
 fps = 1         # frames per second (color switches every frame)
 
 while True:
