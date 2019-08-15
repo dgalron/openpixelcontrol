@@ -36,11 +36,11 @@
 
 const int ledsPerStrip = LED_WIDTH * LED_HEIGHT / 8;
 
-DMAMEM int displayMemory[ledsPerStrip*6];
-int drawingMemory[ledsPerStrip*6];
-elapsedMicros elapsedUsecSinceLastFrameSync = 0;
+int buffer[LED_WIDTH*LED_HEIGHT];
 
-int bytesRead;
+DMAMEM int displayMemory[ledsPerStrip*6];
+int drawingMemory[ledsPerStrip*6]; 
+elapsedMicros elapsedUsecSinceLastFrameSync = 0;
 
 const int config = WS2811_800kHz; // color config is on the PC side
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
@@ -52,16 +52,31 @@ void setup() {
   }
   pinMode(12, INPUT_PULLUP); // Frame Sync
   Serial.setTimeout(50);
+  Serial.begin(9600);
   pinMode(13, OUTPUT);
   leds.begin();
   leds.show();
   digitalWrite(13, HIGH);
+  if (leds.numPixels() != LED_WIDTH * LED_HEIGHT) {
+    while(true) {
+      Serial.print("Error ");
+      Serial.print(leds.numPixels());
+      Serial.print(" != ");
+      Serial.println(LED_WIDTH * LED_HEIGHT);
+      delay(1000);
+    }
+  }
 }
 
 void loop() {
-  bytesRead = Serial.readBytes((char *) drawingMemory, sizeof(drawingMemory));
-  if (bytesRead == sizeof(drawingMemory)) {
-    
+  int bytesRead = Serial.readBytes((char *) buffer, sizeof(buffer));
+  if (bytesRead == sizeof(buffer)) {
+    for (int i = 0; i < 4; ++i) {
+      char tbs[16];
+      sprintf(tbs, "%20x ", buffer[i]); 
+      Serial.print(tbs);
+    }
+    Serial.println();
     digitalWrite(12, HIGH);
     pinMode(12, OUTPUT);
 //    while (elapsedUsecSinceLastFrameSync < usecUntilFrameSync) /* wait */ ;
@@ -69,7 +84,15 @@ void loop() {
     digitalWrite(12, LOW);
     // WS2811 update begins immediately after falling edge of frame sync
 //    digitalWrite(13, HIGH);
+    for (int i = 0; i < leds.numPixels(); i++) {
+      leds.setPixel(i, buffer[i]);
+    }
     leds.show();
+    digitalWrite(13, LOW);
+    bytesRead = 0;
 //    digitalWrite(13, LOW);
+  } else {
+    digitalWrite(13, HIGH);
+//    Serial.println("Blah");
   }
 }

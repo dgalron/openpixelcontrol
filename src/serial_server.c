@@ -27,7 +27,7 @@ specific language governing permissions and limitations under the License. */
 #ifndef BAUD_RATE
 #define BAUD_RATE 1572864
 #endif
-//#define OPC_MAX_PIXELS_PER_MESSAGE 1
+#define OPC_MAX_PIXELS_PER_MESSAGE 64*44
 char *serial_driver_fds[NUM_DRIVERS];
 static u8 buffer[OPC_MAX_PIXELS_PER_MESSAGE * 4];
 uint serial_drivers[NUM_DRIVERS];
@@ -113,6 +113,7 @@ void serial_handler(u8 channel, u16 count, pixel* pixels) {
   }
   printf("\n");  
   serial_write(d);
+  printf("Max pixels per message: %d\n", OPC_MAX_PIXELS_PER_MESSAGE);
 }
 
 void serial_put_pixels(u8* buffer, u16 count, pixel* pixels) {
